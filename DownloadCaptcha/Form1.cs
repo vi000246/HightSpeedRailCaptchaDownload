@@ -48,8 +48,7 @@ namespace DownloadCaptcha
                 for (var i = 0; i <= runTimes; i++)
                 {
                     //取得驗證碼網址(會回傳圖片網址和聲音檔網址的xml)
-                    client.BaseUrl = new Uri("https://irs.thsrc.com.tw/IMINT/?wicket:interface=:0:BookingS1Form:homeCaptcha:reCodeLink::IBehaviorListener&wicket:behaviorId=0&random=0.5316124304206924");
-                    IRestResponse response2 = client.Execute(request);
+                    IRestResponse response2 = client.Execute(new RestRequest("IMINT/?wicket:interface=:0:BookingS1Form:homeCaptcha:reCodeLink::IBehaviorListener&wicket:behaviorId=0&random=0.5316124304206924", Method.GET));
                     var content2 = response2.Content;
 
                     Regex regex = new Regex(@"\/IMINT\/.*homeCaptcha:passCode[^\""]*");
