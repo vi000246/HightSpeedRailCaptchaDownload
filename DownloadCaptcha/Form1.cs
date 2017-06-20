@@ -24,49 +24,57 @@ namespace DownloadCaptcha
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //執行次數
-            int runTimes = Convert.ToInt32(numericUpDown1.Value);
-            //是否下載
-            bool isDownload = checkBox1.Checked;
-            if (isDownload) {
-                if (string.IsNullOrEmpty(textBox1.Text))
-                    MessageBox.Show("請選擇檔案下載路徑");
-            }
-            //高鐵網站的網址
-            string thsrcUrl = "https://irs.thsrc.com.tw/";
-
-            //先進去高鐵網站取得cookie
-            var client = new RestClient(thsrcUrl);
-            client.CookieContainer = new System.Net.CookieContainer();
-            var request = new RestRequest("IMINT", Method.GET);
-
-            IRestResponse response = client.Execute(request);
-            //依據執行次數下載檔案
-            for (var i = 0; i <= runTimes; i++)
+            try
             {
-                //取得驗證碼網址(會回傳圖片網址和聲音檔網址的xml)
-                client.BaseUrl = new Uri("https://irs.thsrc.com.tw/IMINT/?wicket:interface=:0:BookingS1Form:homeCaptcha:reCodeLink::IBehaviorListener&wicket:behaviorId=0&random=0.5316124304206924");
-                IRestResponse response2 = client.Execute(request);
-                var content2 = response2.Content;
-
-                Regex regex = new Regex(@"\/IMINT\/.*homeCaptcha:passCode[^\""]*");
-                Match m = regex.Match(content2);
-                //如果有match到驗證碼圖片地址
-                if (m.Success)
+                //執行次數
+                int runTimes = Convert.ToInt32(numericUpDown1.Value);
+                //是否下載
+                bool isDownload = checkBox1.Checked;
+                if (isDownload)
                 {
-                    var captchaUrl = m.Groups[0].Value;
-                    client.BaseUrl = new Uri(thsrcUrl);//再把baseUrl切換回來
-                    var fileBytes = client.DownloadData(new RestRequest(captchaUrl, Method.GET));
-                    if (isDownload)
+                    if (string.IsNullOrEmpty(textBox1.Text))
+                        throw new ArgumentException("請選擇檔案下載路徑");
+                }
+                //高鐵網站的網址
+                string thsrcUrl = "https://irs.thsrc.com.tw/";
+
+                //先進去高鐵網站取得cookie
+                var client = new RestClient(thsrcUrl);
+                client.CookieContainer = new System.Net.CookieContainer();
+                var request = new RestRequest("IMINT", Method.GET);
+
+                IRestResponse response = client.Execute(request);
+                //依據執行次數下載檔案
+                for (var i = 0; i <= runTimes; i++)
+                {
+                    //取得驗證碼網址(會回傳圖片網址和聲音檔網址的xml)
+                    client.BaseUrl = new Uri("https://irs.thsrc.com.tw/IMINT/?wicket:interface=:0:BookingS1Form:homeCaptcha:reCodeLink::IBehaviorListener&wicket:behaviorId=0&random=0.5316124304206924");
+                    IRestResponse response2 = client.Execute(request);
+                    var content2 = response2.Content;
+
+                    Regex regex = new Regex(@"\/IMINT\/.*homeCaptcha:passCode[^\""]*");
+                    Match m = regex.Match(content2);
+                    //如果有match到驗證碼圖片地址
+                    if (m.Success)
                     {
-                        File.WriteAllBytes(Path.Combine(textBox1.Text, string.Format(@"{0}.png", Guid.NewGuid())), fileBytes);
+                        var captchaUrl = m.Groups[0].Value;
+                        client.BaseUrl = new Uri(thsrcUrl);//再把baseUrl切換回來
+                        var fileBytes = client.DownloadData(new RestRequest(captchaUrl, Method.GET));
+                        if (isDownload)
+                        {
+                            File.WriteAllBytes(Path.Combine(textBox1.Text, string.Format(@"{0}.png", Guid.NewGuid())), fileBytes);
+                        }
+                        pictureBox1.Image = BufferToImage(fileBytes);
+                        pictureBox1.Refresh();
                     }
-                    pictureBox1.Image = BufferToImage(fileBytes);
-                    pictureBox1.Refresh();
+                    else
+                    {
+                        throw new ArgumentException("無法匹配到驗證碼連結位址");
+                    }
                 }
-                else {
-                    MessageBox.Show("無法匹配到驗證碼連結位址");
-                }
+            }
+            catch(Exception ex) {
+                MessageBox.Show(ex.Message);
             }
         }
 
