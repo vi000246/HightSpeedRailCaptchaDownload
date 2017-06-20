@@ -57,7 +57,6 @@ namespace DownloadCaptcha
                     if (m.Success)
                     {
                         var captchaUrl = m.Groups[0].Value;
-                        client.BaseUrl = new Uri(thsrcUrl);//再把baseUrl切換回來
                         var fileBytes = client.DownloadData(new RestRequest(captchaUrl, Method.GET));
                         if (isDownload)
                         {
