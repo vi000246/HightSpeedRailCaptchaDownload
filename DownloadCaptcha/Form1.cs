@@ -16,5 +16,11 @@ namespace DownloadCaptcha
         {
             InitializeComponent();
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            //執行次數
+            int runTimes = Convert.ToInt32(numericUpDown1.Value);
+        }
     }
 }
